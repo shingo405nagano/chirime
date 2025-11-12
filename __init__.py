@@ -2,7 +2,7 @@
 Chiriin - 国土地理院のAPIやパラメーターファイルを利用するモジュール
 """
 
-from .chiriin import (
+from .chirime import (
     MAG_DATA,
     XY,
     XYZ,
@@ -22,9 +22,11 @@ from .chiriin import (
     type_checker_float,
     type_checker_shapely,
 )
+from .geomesh import *
 
 __version__ = "1.0.0"
 __all__ = [
+    "geomesh"
     # Drawer
     "chiriin_drawer",
     "map_editor",
