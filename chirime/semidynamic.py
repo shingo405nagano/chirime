@@ -14,6 +14,7 @@ from typing import Optional
 import pandas as pd
 
 from .config import XY, XYZ, SemiDynaParam
+from .geometries import dms_to_degree
 from .utils import dimensional_count
 from .web import fetch_corrected_semidynamic_from_web
 
@@ -268,6 +269,7 @@ class SemiDynamic(object):
         lat: float,
         alt: Optional[float] = None,
         original: bool = False,
+        is_dms: bool = False,
     ) -> XYZ:
         """
         ## Summary:
@@ -282,9 +284,13 @@ class SemiDynamic(object):
             alt (Optional[float]): 標高(メートル)。指定しない場合はNone。
             original (bool): Trueの場合、元期への補正を適用し、Falseの場合今期への補正
             を適用する。
+            is_dms (bool): 度分秒形式の経緯度を使用する場合はTrue、10進数形式の場合はFalse
         Returns:
             XYZ: 補正後の座標
         """
+        if is_dms:
+            lon = dms_to_degree(lon, decimal_obj=False)
+            lat = dms_to_degree(lat, decimal_obj=False)
         # original=Trueの場合は、今期から元期への補正なので、補正値の符号を反転
         sign = -1.0 if original else 1.0
         # 補正値の取得
@@ -302,7 +308,8 @@ class SemiDynamic(object):
         lon: float | list[float],
         lat: float | list[float],
         original: bool = True,
-    ):
+        is_dms: bool = False,
+    ) -> XY | list[XY]:
         """
         ## Description:
             経緯度に対してセミダイナミック補正を行う。補正パラメーターの適用年はインスタンス化時に指定されたdatetime_に基づく。
@@ -317,9 +324,21 @@ class SemiDynamic(object):
             original (bool, optional):
                 Trueは今期から元期への補正を行う。Falseは元期から今期への補正を行う。
                 デフォルトはTrue。
+            is_dms (bool, optional):
+                度分秒形式の経緯度を使用する場合はTrue、10進数形式の場合はFalse。
+                デフォルトはFalse。
         Returns:
+            XY | list[XY]:
+                補正後の経度、緯度を含むXYオブジェクトまたはXYオブジェクトのリスト。
         """
         dimensional = dimensional_count(lon)
+        if is_dms:
+            if dimensional == 0:
+                lon = dms_to_degree(lon, decimal_obj=False)
+                lat = dms_to_degree(lat, decimal_obj=False)
+            else:
+                lon = [dms_to_degree(lon_i, decimal_obj=False) for lon_i in lon]
+                lat = [dms_to_degree(lat_i, decimal_obj=False) for lat_i in lat]
         iterable = 0 < dimensional
         lons = lon if iterable else [lon]
         lats = lat if iterable == 1 else [lat]
@@ -340,20 +359,37 @@ class SemiDynamic(object):
         lat: float | list[float],
         altitude: float | list[float],
         original: bool = True,
+        is_dms: bool = False,
     ) -> XYZ | list[XYZ]:
         """
         ## Description:
             経緯度と標高に対してWebAPIでセミダイナミック補正を行う。
             補正パラメーターの適用年はインスタンス化時に指定されたdatetime_に基づく。
         Args:
+            lon (float | list[float]):
+                経度(10進数)または経度のリスト
+            lat (float | list[float]):
+                緯度(10進数)または緯度のリスト
+            altitude (float | list[float]):
+                標高(メートル)または標高のリスト
             original (bool, optional):
                 Trueは今期から元期への補正を行う。Falseは元期から今期への補正を行う。
                 デフォルトはTrue。
+            is_dms (bool, optional):
+                度分秒形式の経緯度を使用する場合はTrue、10進数形式の場合はFalse。
+                デフォルトはFalse。
         Returns:
             XYZ | list[XYZ]:
                 補正後の経度、緯度、標高を含むXYZオブジェクトまたはXYZオブジェクトのリスト。
         """
         dimensional = dimensional_count(lon)
+        if is_dms:
+            if dimensional == 0:
+                lon = dms_to_degree(lon, decimal_obj=False)
+                lat = dms_to_degree(lat, decimal_obj=False)
+            else:
+                lon = [dms_to_degree(lon_i, decimal_obj=False) for lon_i in lon]
+                lat = [dms_to_degree(lat_i, decimal_obj=False) for lat_i in lat]
         iterable = 0 < dimensional
         lons = lon if iterable else [lon]
         lats = lat if iterable == 1 else [lat]
