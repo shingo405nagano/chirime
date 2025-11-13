@@ -66,6 +66,15 @@ class Delta(NamedTuple):
     delta_z: float
 
 
+class SemiDynaParam(NamedTuple):
+    code: str
+    lon: float
+    lat: float
+    delta_x: float
+    delta_y: float
+    delta_z: float
+
+
 class RelativePosition(NamedTuple):
     xyz1: XY | XYZ
     xyz2: XY | XYZ
