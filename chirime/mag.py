@@ -3,8 +3,8 @@ import warnings
 
 from .config import MAG_DATA
 from .formatter import type_checker_float
+from .geomesh import geomesh
 from .geometries import dms_to_degree
-from .mesh import MeshCode
 
 
 @type_checker_float(arg_index=0, kward="lon")
@@ -27,7 +27,7 @@ def get_magnetic_declination(lon: float, lat: float, is_dms: bool = False) -> fl
     if is_dms:
         lon = dms_to_degree(lon, decimal_obj=False)  # type: ignore
         lat = dms_to_degree(lat, decimal_obj=False)  # type: ignore
-    mesh_code = MeshCode(lon, lat)
+    mesh_code = geomesh.jpmesh.MeshCodeJP(lon, lat)
     mag = MAG_DATA.get(mesh_code.secandary_mesh_code, None)
     if mag is None:
         h = "-" * 100
