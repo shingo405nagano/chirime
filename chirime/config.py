@@ -1,15 +1,11 @@
-import datetime
 import os
 from dataclasses import dataclass
 from decimal import Decimal
-from glob import glob
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 import numpy as np
 import pandas as pd
 import pyproj
-
-from .formatter import datetime_formatter
 
 # 地磁気値（偏角）のデータを読み込み辞書型に変換。辞書のキーは整数型の第二次メッシュコード
 _mag_df = pd.read_csv(
@@ -82,127 +78,6 @@ class RelativePosition(NamedTuple):
     level_distance: float
     angle: float = 0.0
     slope_distance: float = 0.0
-
-
-class SemidynamicCorrectionFiles(object):
-    def __init__(self):
-        self.files = glob(os.path.join(os.path.dirname(__file__), "data", "*Semi*.par"))
-
-    def _get_file_path(self, datetime_: datetime.datetime) -> FilePath:
-        """
-        ## Summary:
-            地殻変動補正のパラメーターファイルを探すクラス
-        ## Args:
-            datetime_ (datetime.datetime): 補正値を取得したい日時
-        ## Returns:
-
-        """
-        datetime_ = datetime_formatter(datetime_)
-        year = datetime_.year
-        if datetime_.month < 4:
-            # 年度の開始月が4月なので、1月から3月は前年のデータを使用
-            year -= 1
-        file_path = [file for file in self.files if str(year) in file][0]
-        return file_path
-
-    def _clean_line(self, line: list[str]) -> list[list[str]]:
-        """
-        ## Summary:
-            セミダイナミック補正のパラメータを読み込む際に、行ごとに読み込んでいるが
-            その際に改行文字を削除し、数値に変換できるものは変換する為の関数。
-        Args:
-            line (list[str]):
-                セミダイナミック補正のパラメータの行
-        Returns:
-            list[list[str]]:
-                改行文字を削除し、数値に変換できるものは変換したリスト
-        Example:
-            >>> line = ['MeshCode', 'dB(sec)', '', 'dL(sec)', 'dH(m)\n']
-            >>> xxx._clean_line(line)
-            ['MeshCode', 'dB(sec)', 'dL(sec)', 'dH(m)']
-            >>> line = ['36230600', '', '-0.05708', '', '',
-                        '0.04167', '', '', '0.05603\n']
-            >>> xxx._clean_line(line)
-            ['36230600', -0.05708, 0.04167, 0.05603]
-        """
-        result = []
-        for txt in line:
-            # 改行文字を削除
-            txt = txt.replace("\n", "") if "\n" in txt else txt
-            try:
-                if "." in txt:
-                    # 小数点が含まれている場合はfloatに変換
-                    result.append(float(txt))
-                else:
-                    # 小数点が含まれていない場合はintに変換
-                    result.append(int(txt))
-            except Exception:
-                # 変換できない場合はそのまま文字列として追加
-                if txt == "":
-                    # 空文字は無視
-                    pass
-                else:
-                    result.append(txt)
-        return result
-
-    def read_file(
-        self, datetime_: datetime.datetime, encoding: str = "utf-8"
-    ) -> pd.DataFrame:
-        """
-        ## Summary:
-            地殻変動補正のパラメーターファイルを読み込む
-        ## Args:
-            datetime_ (datetime.datetime):
-                補正値を取得したい日時
-        ## Returns:
-            pd.DataFrame:
-                補正値のデータフレーム
-        """
-        file_path = self._get_file_path(datetime_)
-        with open(file_path, mode="r", encoding=encoding) as f:
-            # 16行目からパラメータが定義されている。
-            lines = f.readlines()[15:]
-            headers = self._clean_line(lines[0].split(" "))
-            data = [self._clean_line(line.split(" ")) for line in lines[1:]]
-            df = pd.DataFrame(data, columns=headers)
-        # Breedte（緯度）Lengte（経度）
-        df = df.rename(
-            columns={"dB(sec)": "delta_y", "dL(sec)": "delta_x", "dH(m)": "delta_z"}
-        )
-        return df.set_index("MeshCode")
-
-
-def semidynamic_correction_file(datetime_: datetime.datetime) -> Optional[pd.DataFrame]:
-    """
-    ## Summary:
-        地殻変動補正のパラメーターファイルを読み込む
-    ## Args:
-        datetime_ (datetime.datetime):
-            補正値を取得したい日時
-    ## Returns:
-        pd.DataFrame:
-            補正値のデータフレーム。
-            補正値は秒単位の値なので、10進法で表現する時は3600で割る必要がある。
-            {index(int): MeshCode, columns: delta_x, delta_y, delta_z}
-    ## Raises:
-        RuntimeError:
-            ファイルの読み込みに失敗した場合
-        ValueError:
-            すべてのエンコーディングでファイルの読み込みに失敗した場合
-    """
-    semi = SemidynamicCorrectionFiles()
-    encodings = ["Shift-JIS", "utf-8", "cp932"]
-    try:
-        for encoding in encodings:
-            try:
-                return semi.read_file(datetime_, encoding=encoding)
-            except UnicodeDecodeError:
-                pass
-    except Exception:
-        raise ValueError(  # noqa: B904
-            "Failed to read the file with all encodings.use encofings: "
-            + ", ".join(encodings)
-        )
 
 
 class ChiriinWebApi(object):

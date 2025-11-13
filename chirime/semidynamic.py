@@ -49,12 +49,12 @@ class SemiDynamic(object):
         Returns:
             pd.DataFrame: セミダイナミック補正用のパラメーターファイルのデータフレーム
         ## DataFrame:
-               MeshCode  dB(sec)  dL(sec)    dH(m)   lon_min    lat_min   lon_max    lat_max
-            0  36230600 -0.05283  0.03851  0.07238  123.7500  24.000000  123.7625  24.008333
-            1  36230605 -0.05226  0.03863  0.06994  123.8125  24.000000  123.8250  24.008333
-            2  36230700 -0.05100  0.03841  0.06324  123.8750  24.000000  123.8875  24.008333
-            3  36230555 -0.05345  0.03806  0.07369  123.6875  24.041667  123.7000  24.050000
-            4  36230650 -0.05260  0.03858  0.07091  123.7500  24.041667  123.7625  24.050000
+            MeshCode  dB(sec)  dL(sec)    dH(m)   lon_min    lat_min   lon_max    lat_max
+            36230600 -0.05283  0.03851  0.07238  123.7500  24.000000  123.7625  24.008333
+            36230605 -0.05226  0.03863  0.06994  123.8125  24.000000  123.8250  24.008333
+            36230700 -0.05100  0.03841  0.06324  123.8750  24.000000  123.8875  24.008333
+            36230555 -0.05345  0.03806  0.07369  123.6875  24.041667  123.7000  24.050000
+            36230650 -0.05260  0.03858  0.07091  123.7500  24.041667  123.7625  24.050000
         """
         if self.param_df is not None:
             return self.param_df
@@ -153,7 +153,8 @@ class SemiDynamic(object):
                     )
         if len(result) != 4:
             raise ValueError(
-                f"Expected 4 parameters, but got {len(result)}. Check the input coordinates."
+                f"Expected 4 parameters, but got {len(result)}. "
+                "Check the input coordinates."
             )
         return result
 
