@@ -1,15 +1,34 @@
-# よく使われるクラスと関数を直接インポート可能にする
-from ._drawer import calculate_mean_slope_in_polygon, chiriin_drawer
-from .config import MAG_DATA, XY, XYZ, ChiriinWebApi, Scope, TileData  # noqa: F401
-from .formatter import (  # noqa: F401
+from ._drawer import calculate_mean_slope_in_polygon, chirime
+from .config import MAG_DATA, XY, XYZ, ChiriinWebApi, Scope, TileData
+from .formatter import (
     type_checker_crs,
     type_checker_float,
     type_checker_shapely,
 )
-from .geometries import degree_to_dms, dms_to_degree  # noqa: F401
-from .mag import get_magnetic_declination  # noqa: F401
-from .mesh import MeshCode  # noqa: F401
-from .paper import MapEditor  # noqa: F401
-from .semidynamic import SemiDynamic  # noqa: F401
+from .geometries import degree_to_dms, dms_to_degree
+from .mag import get_magnetic_declination
+from .paper import MapEditor
+from .semidynamic import SemiDynamic
 
 map_editor = MapEditor
+
+__version__ = "0.1.1"
+
+__all__ = [
+    "calculate_mean_slope_in_polygon",
+    "chirime",
+    "MAG_DATA",
+    "XY",
+    "XYZ",
+    "ChiriinWebApi",
+    "Scope",
+    "TileData",
+    "type_checker_crs",
+    "type_checker_float",
+    "type_checker_shapely",
+    "degree_to_dms",
+    "dms_to_degree",
+    "get_magnetic_declination",
+    "MapEditor",
+    "SemiDynamic",
+]

@@ -19,15 +19,15 @@ import shapely.geometry
 
 from .config import XY, XYZ, RelativePosition, TileData, TileUrls
 from .formatter import (
+    dimensional_count,
     type_checker_crs,
     type_checker_elev_type,
     type_checker_img_type,
     type_checker_iterable,
 )
-
+from .geomesh import geomesh
 from .geometries import transform_xy
 from .mag import get_magnetic_declination
-from .mesh import MeshCode
 from .semidynamic import SemiDynamic
 from .tile import search_tile_info_from_geometry, search_tile_info_from_xy
 from .web import (
@@ -62,7 +62,7 @@ class _ChiriinDrawer(object):
         return get_magnetic_declination(lon, lat, is_dms)
 
     @staticmethod
-    def get_mesh_code(lon: float, lat: float, is_dms: bool = False) -> MeshCode:
+    def get_mesh_code(lon: float, lat: float, is_dms: bool = False) -> geomesh.MeshCodeJP:
         """
         ## Summary:
             任意の地点のメッシュコードを取得します。
@@ -78,21 +78,17 @@ class _ChiriinDrawer(object):
             is_dms (bool):
                 経緯度が度分秒形式かどうか
         Returns:
-            MeshCode:
-                メッシュコードの各部分を含むMeshCodeオブジェクト
-                - first_mesh_code: 第1次メッシュコード
-                - secandary_mesh_code: 第2次メッシュコード
-                - standard_mesh_code: 基準地域メッシュコード
-                - half_mesh_code: 2分の1地域メッシュコード
-                - quarter_mesh_code: 4分の1地域メッシュコード
+            geomesh.MeshCodeJP:
+                メッシュコードオブジェクト
         """
-        return MeshCode(lon, lat, is_dms)
+        return geomesh.jpmesh.MeshCodeJP(lon, lat, is_dms)
 
     @staticmethod
-    def semidynamic_2d(
+    def semidynamic(
         lon: float | Iterable[float],
         lat: float | Iterable[float],
-        datetime_: datetime.datetime,
+        measurement_date: datetime.datetime,
+        alt: float | Iterable[float] = None,
         return_to_original: bool = True,
     ) -> XY | list[XY]:
         """
@@ -100,12 +96,16 @@ class _ChiriinDrawer(object):
             セミダイナミック補正による2次元の地殻変動補正を行い、補正後の座標を
             返すメソッドです。補正には「今期から元期へ」と「元期から今期へ」の変
             換があり、それぞれパラメーターファイルを取得する為に座標の計測日が必
-            要です。
+            要です。この補正は国土地理院で公開されているパラメーターファイルを使用
+            して補正を行います。バイリニア補完などは独自で実装している為、数ミリ程度
+            の誤差が生じる可能性があります。
         Args:
             lon (float | Iterable[float]):
                 経度（10進法）の数値またはリストなどの反復可能なオブジェクト
             lat (float | Iterable[float]):
                 緯度（10進法）の数値またはリストなどの反復可能なオブジェクト
+            alt (float | Iterable[float]):
+                標高（メートル単位）の数値またはリストなどの反復可能なオブジェクト
             datetime_ (datetime.datetime):
                 座標の計測日時。この日時によって使用するパラメーターファイルが
                 決まります。
@@ -113,18 +113,20 @@ class _ChiriinDrawer(object):
                 True: 「今期から元期へ」の補正を行い、補正後の座標を返す
                 False: 「元期から今期へ」の補正を行い、補正後の座標を返す
         """
-        semidynamic = SemiDynamic(
-            lon=lon,
-            lat=lat,
-            datetime_=datetime_,
-        )
-        return semidynamic.correction_2d(return_to_original)
+        semidynamic = SemiDynamic(measurement_date=measurement_date)
+        if dimensional_count(lon) == 0:
+            return semidynamic.correction(lon, lat, alt, return_to_original)
+        results = []
+        for i, lon_, lat_ in enumerate(zip(lon, lat, strict=False)):
+            alt_ = alt[i] if alt is not None else None
+            results.append(semidynamic.correction(lon_, lat_, alt_, return_to_original))
+        return results
 
     @staticmethod
     def fetch_semidynamic_2d(
         lon: float | Iterable[float],
         lat: float | Iterable[float],
-        datetime_: datetime.datetime,
+        measurement_date: datetime.datetime,
         return_to_original: bool = True,
     ) -> XY | list[XY]:
         """
@@ -142,26 +144,22 @@ class _ChiriinDrawer(object):
                 経度（10進法）の数値またはリストなどの反復可能なオブジェクト
             lat (float | Iterable[float]):
                 緯度（10進法）の数値またはリストなどの反復可能なオブジェクト
-            datetime_ (datetime.datetime):
+            measurement_date (datetime.datetime):
                 座標の計測日時。この日時によって使用するパラメーターファイルが
                 決まります。
             return_to_original (bool):
                 True: 「今期から元期へ」の補正を行い、補正後の座標を返す
                 False: 「元期から今期へ」の補正を行い、補正後の座標を返す
         """
-        semidynamic = SemiDynamic(
-            lon=lon,
-            lat=lat,
-            datetime_=datetime_,
-        )
-        return semidynamic.correction_2d_with_web_api(return_to_original)
+        semidynamic = SemiDynamic(measurement_date=measurement_date)
+        return semidynamic.correction_2d_with_web_api(lon, lat, return_to_original)
 
     @staticmethod
     def fetch_semidynamic_3d(
         lon: float | Iterable[float],
         lat: float | Iterable[float],
         altitude: float | Iterable[float],
-        datetime_: datetime.datetime,
+        measurement_date: datetime.datetime,
         return_to_original: bool = True,
     ) -> XYZ | list[XYZ]:
         """
@@ -181,20 +179,17 @@ class _ChiriinDrawer(object):
                 緯度（10進法）の数値またはリストなどの反復可能なオブジェクト
             altitude (float | Iterable[float]):
                 標高（メートル単位）の数値またはリストなどの反復可能なオブジェクト
-            datetime_ (datetime.datetime):
+            measurement_date (datetime.datetime):
                 座標の計測日時。この日時によって使用するパラメーターファイルが
                 決まります。
             return_to_original (bool):
                 True: 「今期から元期へ」の補正を行い、補正後の座標を返す
                 False: 「元期から今期へ」の補正を行い、補正後の座標を返す
         """
-        semidynamic = SemiDynamic(
-            lon=lon,
-            lat=lat,
-            altitude=altitude,
-            datetime_=datetime_,
+        semidynamic = SemiDynamic(measurement_date=measurement_date)
+        return semidynamic.correction_3d_with_web_api(
+            lon, lat, altitude, return_to_original
         )
-        return semidynamic.correction_3d_with_web_api(return_to_original)
 
     @staticmethod
     @type_checker_iterable(arg_index=0, kward="lon1")
@@ -1120,7 +1115,7 @@ class _ChiriinDrawer(object):
         return fetch_geoid_height_from_web(x, y, year)
 
 
-chiriin_drawer = _ChiriinDrawer()
+chirime = _ChiriinDrawer()
 
 
 def calc_slope(dtm: np.ndarray, x_resol: float, y_resol: float) -> np.ndarray:
