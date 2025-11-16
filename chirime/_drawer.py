@@ -202,6 +202,7 @@ class _ChiriinDrawer(object):
         lon2: float | Iterable[float],
         lat2: float | Iterable[float],
         ellipsoid: str = "bessel",
+        slope_distance: bool = True,
     ) -> RelativePosition | list[RelativePosition]:
         """
         ## Summary:
@@ -242,14 +243,31 @@ class _ChiriinDrawer(object):
         ):
             xy1 = XY(lon1_, lat1_)
             xy2 = XY(lon2_, lat2_)
-            relative_obj = RelativePosition(
-                xyz1=xy1,
-                xyz2=xy2,
-                azimuth=data["azimuth"],
-                level_distance=data["distance"],
-                angle=0.0,
-                slope_distance=0.0,
-            )
+            level = data["distance"]
+            if slope_distance:
+                elev1 = chirime.fetch_elevation(lon1_, lat1_, "EPSG:4326")
+                elev2 = chirime.fetch_elevation(lon2_, lat2_, "EPSG:4326")
+                elev_diff = elev2 - elev1
+                slope = np.sqrt(level**2 + elev_diff**2)
+                vertical_angle_rad = np.atan2(elev_diff, level)
+                vertical_angle_deg = np.degrees(vertical_angle_rad)
+                relative_obj = RelativePosition(
+                    xyz1=xy1,
+                    xyz2=xy2,
+                    azimuth=data["azimuth"],
+                    level_distance=level,
+                    angle=float(vertical_angle_deg),
+                    slope_distance=float(slope),
+                )
+            else:
+                relative_obj = RelativePosition(
+                    xyz1=xy1,
+                    xyz2=xy2,
+                    azimuth=data["azimuth"],
+                    level_distance=data["distance"],
+                    angle=0.0,
+                    slope_distance=0.0,
+                )
             relative_objs.append(relative_obj)
         if len(relative_objs) == 1:
             return relative_objs[0]
