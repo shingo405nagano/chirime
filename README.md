@@ -531,24 +531,27 @@ type: <class 'float'>, value: 37.2381
 ```
 
 
-#### 例1）グリッドのみ
+#### 例1）グリッドのみ（真北）
 ![](chirime/data/imgs/original_map.png)
 
+#### 例2）グリッドのみ（磁北）
+![](chirime/data/imgs/mag_map.png)
 
-#### 例2）標準地図（[出典：国土地理院　地理院タイル](https://maps.gsi.go.jp/development/ichiran.html)）
+
+#### 例3）標準地図（[出典：国土地理院　地理院タイル](https://maps.gsi.go.jp/development/ichiran.html)）
 ![](chirime/data/imgs/standard_map.png)
 
 
 
-#### 例3）淡色地図（[出典：国土地理院　地理院タイル](https://maps.gsi.go.jp/development/ichiran.html)）
+#### 例4）淡色地図（[出典：国土地理院　地理院タイル](https://maps.gsi.go.jp/development/ichiran.html)）
 ![](chirime/data/imgs/pale_map.png)
 
 
-#### 例4）航空写真（[出典：国土地理院　地理院タイル](https://maps.gsi.go.jp/development/ichiran.html)）
+#### 例5）航空写真（[出典：国土地理院　地理院タイル](https://maps.gsi.go.jp/development/ichiran.html)）
 ![](chirime/data/imgs/photo_map.png)
 
 
-#### 例5）傾斜図（[出典：国土地理院　地理院タイル](https://maps.gsi.go.jp/development/ichiran.html)）
+#### 例6）傾斜図（[出典：国土地理院　地理院タイル](https://maps.gsi.go.jp/development/ichiran.html)）
 ![](chirime/data/imgs/slope_map.png)
 
 
