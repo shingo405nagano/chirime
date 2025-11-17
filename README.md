@@ -418,9 +418,9 @@ type: <class 'float'>, value: 37.2381
 >>> map_editor.add_icon_of_simple_compass(img_size=2.5)
 >>> map_editor.add_icon_of_compass(img_size=2.5)
 ```
-<img src="chiriin/data/imgs/true_north.png" width="50">
-<img src="chiriin/data/imgs/simple_compass.png" width="250">
-<img src="chiriin/data/imgs/compass.png" width="270">
+<img src="chirime/data/imgs/true_north.png" width="50">
+<img src="chirime/data/imgs/simple_compass.png" width="250">
+<img src="chirime/data/imgs/compass.png" width="270">
 
 
 ### **8-5. 縮尺ラベルの追加**
@@ -532,24 +532,24 @@ type: <class 'float'>, value: 37.2381
 
 
 #### 例1）グリッドのみ
-![](chiriin/data/imgs/original_map.png)
+![](chirime/data/imgs/original_map.png)
 
 
 #### 例2）標準地図（[出典：国土地理院　地理院タイル](https://maps.gsi.go.jp/development/ichiran.html)）
-![](chiriin/data/imgs/standard_map.png)
+![](chirime/data/imgs/standard_map.png)
 
 
 
 #### 例3）淡色地図（[出典：国土地理院　地理院タイル](https://maps.gsi.go.jp/development/ichiran.html)）
-![](chiriin/data/imgs/pale_map.png)
+![](chirime/data/imgs/pale_map.png)
 
 
 #### 例4）航空写真（[出典：国土地理院　地理院タイル](https://maps.gsi.go.jp/development/ichiran.html)）
-![](chiriin/data/imgs/photo_map.png)
+![](chirime/data/imgs/photo_map.png)
 
 
 #### 例5）傾斜図（[出典：国土地理院　地理院タイル](https://maps.gsi.go.jp/development/ichiran.html)）
-![](chiriin/data/imgs/slope_map.png)
+![](chirime/data/imgs/slope_map.png)
 
 
 
