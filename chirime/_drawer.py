@@ -34,6 +34,7 @@ from .web import (
     fetch_distance_and_azimuth_from_web,
     fetch_elevation_from_web,
     fetch_elevation_tiles_from_web,
+    fetch_geocentric_orthogonal_coordinates_from_web,
     fetch_geoid_height_from_web,
     fetch_img_map_tiles_from_web,
 )
@@ -1131,6 +1132,46 @@ class _ChiriinDrawer(object):
             else:
                 x, y = xy.x, xy.y
         return fetch_geoid_height_from_web(x, y, year)
+
+    def fetch_geocentric_orthogonal_coordinates(
+        self,
+        params: list[dict[str, float]] = None,
+        **kwargs,
+    ) -> list[XYZ]:
+        """
+        ## Summary:
+            経緯度と地心直交座標の相互変換を行います。
+        Args:
+            params (list[dict[str, float]], optional):
+                経緯度から地心直交座標への変換を行うためのパラメータのリスト。
+                - 'lat' (float): 緯度（度単位）
+                - 'lon' (float): 経度（度単位）
+                - 'alt' (float): 高度（メートル単位）
+                - 'geoid_height' (float): ジオイド高（メートル単位）
+                地心直交座標から経緯度への変換を行う場合は、'x', 'y', 'z'を使用します。
+                - 'x' (float): 地心直交座標のX成分（メートル単位）
+                - 'y' (float): 地心直交座標のY成分（メートル単位）
+                - 'z' (float): 地心直交座標のZ成分（メートル単位）
+            **kwargs:
+                複数の座標を変換する場合は、paramsを使用してください。
+                単一の座標を変換する場合は、以下のキーワード引数を使用できます。
+                - 'lat' (float): 緯度（度単位）
+                - 'lon' (float): 経度（度単位）
+                - 'alt' (float): 高度（メートル単位）
+                - 'geoid_height' (float): ジオイド高（メートル単位）
+                地心直交座標から経緯度への変換を行う場合は、'x', 'y', 'z'を使用します。
+                - 'x' (float): 地心直交座標のX成分（メートル単位）
+                - 'y' (float): 地心直交座標のY成分（メートル単位）
+                - 'z' (float): 地心直交座標のZ成分（メートル単位）
+        Returns:
+            list[XYZ]:
+                変換後の座標のリスト。XYZオブジェクトのリストを返します。
+                - LonLat to XYZ Example: "geocentricX", "geocentricY", "geocentricZ"
+                - XYZ to LonLat Example: "longitude", "latitude", "ellipsoidHeight"
+        """
+        if params is not None:
+            return fetch_geocentric_orthogonal_coordinates_from_web(params)
+        return fetch_geocentric_orthogonal_coordinates_from_web([kwargs])
 
 
 chirime = _ChiriinDrawer()

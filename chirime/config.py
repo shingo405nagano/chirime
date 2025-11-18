@@ -187,6 +187,40 @@ class ChiriinWebApi(object):
         )
         return url
 
+    @staticmethod
+    def geocentric_orthogonal_coordinates(lonlat: bool = True) -> str:
+        """
+        ## Summary:
+            地理院APIで経緯度と地心直交座標系の相互変換を行う為のURL。
+        ## Args:
+            lonlat(bool):
+                True: 経緯度 -> 地心直交座標系
+                False: 地心直交座標系 -> 経緯度
+        ## Returns:
+            str:
+                地理院APIの経緯度と地心直交座標系の相互変換を行う為のURL
+        """
+        url = (
+            "http://vldb.gsi.go.jp/sokuchi/surveycalc/surveycalc/trans.pl?"
+            "outputType=json&"
+        )
+        if lonlat:
+            url += (
+                "cnv_type=0&"
+                "latitude={lat}&"
+                "longitude={lon}&"
+                "altitude={alt}&"
+                "geoidHeight={geoid_height}"
+            )
+        else:
+            url += (
+                "cnv_type=1&"  #
+                "geocentricX={x}&"
+                "geocentricY={y}&"
+                "geocentricZ={z}"
+            )
+        return url
+
 
 class TileScope(NamedTuple):
     x_min: float = -20037508.342789244

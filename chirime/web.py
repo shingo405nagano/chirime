@@ -28,7 +28,7 @@ async def fetch_elevation(
     time_out: int = 10,
 ) -> dict[int, float]:
     """
-    ## Description:
+    ## Summary:
         地理院APIで標高値を取得する
     Args:
         session(aiohttp.client.ClientSession): セッション
@@ -66,7 +66,7 @@ async def fetch_elevation_main(
     idxs: list[int], lons: list[float], lats: list[float], time_sleep: int = 10
 ) -> list[dict[int, float]]:
     """
-    ## Description:
+    ## Summary:
         地理院APIで標高値を取得するメイン処理
     Args:
         idxs(list[int]): インデックス
@@ -98,7 +98,7 @@ def fetch_elevation_from_web(
     lat: float | list[float],
 ) -> list[float]:
     """
-    ## Description:
+    ## Summary:
         非同期処理により、地理院APIで標高値を取得する
     Args:
         lon(float | list[float]): 10進経度
@@ -146,7 +146,7 @@ async def fetch_corrected_semidynamic(
     return_to_original: bool = True,
 ) -> dict[int, float]:
     """
-    ## Description:
+    ## Summary:
         地理院APIでセミダイナミック補正を行う
     Args:
         session(aiohttp.client.ClientSession): セッション
@@ -215,7 +215,7 @@ async def fetch_corrected_semidynamic_main(
     return_to_original: bool = True,
 ) -> list[dict[int, float]]:
     """
-    ## Description:
+    ## Summary:
         地理院APIでセミダイナミック補正を行うメイン処理
     Args:
         idxs(list[int]): インデックス
@@ -267,7 +267,7 @@ def fetch_corrected_semidynamic_from_web(
     return_to_original: bool = True,
 ) -> list[XYZ]:
     """
-    ## Description:
+    ## Summary:
         非同期処理により、地理院APIでセミダイナミック補正を行う。
         これは今期から元期への2次元補正を行う。2025/4以降に測量を行ったものでは
         通常2024年を元期とするが、2024年以前に測量を行ったものでは2011年を元期とする。
@@ -318,7 +318,7 @@ async def fetch_distance_and_azimuth(
     time_out: int = 10,
 ) -> dict[int, tuple[float, float]]:
     """
-    ## Description:
+    ## Summary:
         地理院APIで2点間の距離と方位角を計算する
     Args:
         session(aiohttp.client.ClientSession): セッション
@@ -376,7 +376,7 @@ async def fetch_distance_and_azimuth_main(
     time_sleep: int = 10,
 ) -> list[dict[int, tuple[float, float]]]:
     """
-    ## Description:
+    ## Summary:
         地理院APIで2点間の距離と方位角を計算するメイン処理
     Args:
         idxs(list[int]): インデックス
@@ -424,7 +424,7 @@ def fetch_distance_and_azimuth_from_web(
     ellipsoid: str = "GRS80",
 ) -> list[tuple[float, float]]:
     """
-    ## Description:
+    ## Summary:
         非同期処理により、地理院APIで2点間の距離と方位角を計算する
     Args:
         lons1(list[float]): 1点目の10進経度
@@ -608,7 +608,7 @@ async def fetch_geoid_height(
     time_out: int = 10,
 ) -> dict[int, float]:
     """
-    ## Description:
+    ## Summary:
         地理院APIで2011年の日本測地系におけるジオイド高を取得する
     Args:
         session(aiohttp.client.ClientSession): セッション
@@ -660,7 +660,7 @@ async def fetch_geoid_height_main(
     time_sleep: int = 10,
 ) -> list[dict[int, float]]:
     """
-    ## Description:
+    ## Summary:
         地理院APIでジオイド高を取得するメイン処理
     Args:
         idxs(list[int]): インデックス
@@ -694,7 +694,7 @@ def fetch_geoid_height_from_web(
     year: int = 2011,
 ) -> list[float]:
     """
-    ## Description:
+    ## Summary:
         非同期処理により、地理院APIでジオイド高を取得する
     Args:
         lons(list[float]): 10進経度
@@ -717,3 +717,141 @@ def fetch_geoid_height_from_web(
         # 単一の値の場合はリストではなく値を返す
         return sorted_geoid_heights[0]
     return sorted_geoid_heights
+
+
+# ***********************************************************************
+# ********** 地理院APIで経緯度と地心直交座標系の相互変換 ****************
+# ***********************************************************************
+async def fetch_geocentric_orthogonal_coordinates(
+    session: aiohttp.client.ClientSession,
+    index: int,
+    max_retry: int = 5,
+    time_out: int = 10,
+    **kwargs,
+):
+    """
+    ## Summary:
+        地理院APIで経緯度と地心直交座標系の相互変換を行う
+    Args:
+        session(aiohttp.client.ClientSession): セッション
+        index(int): インデックス
+        kwargs: 以下のいずれかの組み合わせで指定する
+            - lon(float), lat(float), alt(float), geoid_height(float): 経緯度と標高とジオイド高
+            - x(float), y(float), z(float): 地心直交座標系の座標
+        max_retry(int): リトライ回数
+        time_out(int): タイムアウト
+    """
+    if (
+        ("lon" in kwargs)
+        and ("lat" in kwargs)
+        and ("alt" in kwargs)
+        and ("geoid_height" in kwargs)
+    ):
+        url = chiriin_web_api.geocentric_orthogonal_coordinates().format(
+            lon=kwargs["lon"],
+            lat=kwargs["lat"],
+            alt=kwargs["alt"],
+            geoid_height=kwargs["geoid_height"],
+        )
+    elif ("x" in kwargs) and ("y" in kwargs) and ("z" in kwargs):
+        url = chiriin_web_api.geocentric_orthogonal_coordinates(False).format(
+            x=kwargs["x"],
+            y=kwargs["y"],
+            z=kwargs["z"],
+        )
+    else:
+        raise ValueError(
+            "Invalid arguments. Provide either (lon, lat, alt, geoid_height) or (x, y, z)."
+        )
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
+    }
+    for _ in range(max_retry):
+        try:
+            async with session.get(url, headers=headers, timeout=time_out) as response:
+                data = await response.json()
+                if data.get("ErrMsg") is None:
+                    data = data.get("OutputData")
+                    print(f"Idx: {index}  Data: {data}")
+                    return {index: data}
+                else:
+                    print(f"サーバーが混みあっています。ErrMsg: {data.get('ErrMsg')}")
+        except aiohttp.ClientError:
+            print(f"リクエストに失敗しました (Index: {index}). 再試行中...")
+    return {index: None}
+
+
+async def fetch_geocentric_orthogonal_coordinates_main(
+    idxs: list[int],
+    params_list: list[dict],
+    time_sleep: int = 10,
+) -> list[dict[int, dict]]:
+    """
+    ## Summary:
+        地理院APIで経緯度と地心直交座標系の相互変換を行うメイン処理
+    Args:
+        idxs(list[int]): インデックス
+        params_list(list[dict]): 各リクエストのパラメータリスト
+        time_sleep(int): 待ち時間。地理院APIのリクエスト制限による
+    Returns:
+        list[dict[int, dict]]: [{index: data}]
+    """
+    results = []
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        for idx, params in zip(idxs, params_list, strict=False):
+            task = fetch_geocentric_orthogonal_coordinates(
+                session=session,
+                index=idx,
+                **params,
+            )
+            tasks.append(task)
+            if len(tasks) == 10:
+                results += await asyncio.gather(*tasks)
+                tasks = []
+                time.sleep(time_sleep)
+        if tasks:
+            results += await asyncio.gather(*tasks)
+    return results
+
+
+def fetch_geocentric_orthogonal_coordinates_from_web(
+    params_list: list[dict],
+) -> list[XYZ]:
+    """
+    ## Summary:
+        非同期処理により、地理院APIで経緯度と地心直交座標系の相互変換を行う
+    Args:
+        params_list(list[dict]): 各リクエストのパラメータリスト
+    Returns:
+        list[XYZ]: 各リクエストの結果リスト
+         - LonLat to XYZ Example: "geocentricX", "geocentricY", "geocentricZ"
+         - XYZ to LonLat Example: "longitude", "latitude", "ellipsoidHeight"
+    """
+    idxs = list(range(len(params_list)))
+    resps_lst = asyncio.run(
+        fetch_geocentric_orthogonal_coordinates_main(
+            idxs=idxs,
+            params_list=params_list,
+        )
+    )
+    _data = {}
+    for resp in resps_lst:
+        _data.update(resp)
+    sorted_keys = sorted(_data.keys())
+    sorted_results = [_data[key] for key in sorted_keys]
+    result = []
+    for item in sorted_results:
+        if item is not None:
+            if "geocentricX" in item:
+                x = float(item["geocentricX"])
+                y = float(item["geocentricY"])
+                z = float(item["geocentricZ"])
+            else:
+                x = float(item["longitude"])
+                y = float(item["latitude"])
+                z = float(item["ellipsoidHeight"])
+            result.append(XYZ(x=x, y=y, z=z))
+        else:
+            result.append(None)
+    return result
