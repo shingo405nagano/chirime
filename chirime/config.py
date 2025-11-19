@@ -301,6 +301,7 @@ class TileUrls(object):
         self._dem_types = ["dem10b", "dem5a", "dem5b"]
         self._img_types = ["standard", "photo", "slope"]
         self._chiriin_source = "出典：国土地理院 地理院タイル"
+        self._rinya_miyagi_source = "宮城県・微地形表現図マップタイル（林野庁加工）"
 
     @property
     def dem_10b(self) -> str:
@@ -397,6 +398,7 @@ class TileUrls(object):
         """
         ## Summary:
             G空間センターで公開されている、宮城県の微地形図タイル。
+            ZoomLevelは8~18の範囲で指定する必要がある。
             https://www.geospatial.jp/ckan/dataset/rinya-miyagi-maptiles
             出典：宮城県・微地形表現図マップタイル（林野庁加工）
         """
