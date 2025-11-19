@@ -690,7 +690,8 @@ class MapEditor(PaperSize):
                 - 'pale': 淡色地図（ZL = 5 ~ 18）
                 - 'photo': 航空写真（ZL = 2 ~ 18)
                 - 'slope': 傾斜図（ZL = 3 ~ 15）
-                - 'micro_topo_miyagi': 宮城県微地形図（ZL = 15）
+                - 'micro_topo_miyagi': 宮城県微地形図（ZL = 8 ~ 18）
+                - 'world_imagery': Esri World Imagery（ZL = 0 ~ 23）
             zl (int):
                 ズームレベル。デフォルトは15。
         Returns:
@@ -701,30 +702,42 @@ class MapEditor(PaperSize):
         data = {
             "standard": {
                 "func": chiriin_drawer.fetch_img_tile_geometry_with_standard_map,
-                "source": tile_urls._chiriin_source,
+                "source": tile_urls._chiriin_source.get("source"),
+                "store": tile_urls._chiriin_source.get("store"),
             },
             "pale": {
                 "func": chiriin_drawer.fetch_img_tile_geometry_with_pale_map,
-                "source": tile_urls._chiriin_source,
+                "source": tile_urls._chiriin_source.get("source"),
+                "store": tile_urls._chiriin_source.get("store"),
             },
             "photo": {
                 "func": chiriin_drawer.fetch_img_tile_geometry_with_photo_map,
-                "source": tile_urls._chiriin_source,
+                "source": tile_urls._chiriin_source.get("source"),
+                "store": tile_urls._chiriin_source.get("store"),
             },
             "slope": {
                 "func": chiriin_drawer.fetch_img_tile_geometry_with_slope_map,
-                "source": tile_urls._chiriin_source,
+                "source": tile_urls._chiriin_source.get("source"),
+                "store": tile_urls._chiriin_source.get("store"),
             },
             "micro_topo_miyagi": {
                 "func": chiriin_drawer.fetch_img_tile_geometry_with_miyagi_micro_topo,
-                "source": tile_urls._rinya_miyagi_source,
+                "source": tile_urls._rinya_miyagi_source.get("source"),
+                "store": tile_urls._rinya_miyagi_source.get("store"),
+            },
+            "world_imagery": {
+                "func": chiriin_drawer.fetch_img_tile_geometry_with_world_imagery,
+                "source": tile_urls._world_imagery_source.get("source"),
+                "store": tile_urls._world_imagery_source.get("store"),
             },
         }.get(map_name.lower(), None)
         if data is None:
             raise ValueError(
                 f"Invalid map name: {map_name}. Choose from 'standard', 'photo',"
-                " 'slope', 'micro_topo_miyagi'."
+                " 'slope', 'micro_topo_miyagi', 'world_imagery'."
             )
+        store = data["store"]
+        del data["store"]
         # タイルの取得範囲を計算
         metre_bbox = shapely.box(*(x_min, y_min, x_max, y_max))
         tile_datasets = data["func"](
@@ -761,7 +774,7 @@ class MapEditor(PaperSize):
             fontsize=8,
             va="bottom",
             bbox=dict(facecolor="none", edgecolor="none", pad=0),
-            url="https://maps.gsi.go.jp/development/ichiran.html",
+            url=store,
         )
 
     def add_icon(

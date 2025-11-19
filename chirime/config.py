@@ -300,8 +300,18 @@ class TileUrls(object):
         self._base_url = "https://cyberjapandata.gsi.go.jp/xyz/{t}/{z}/{x}/{y}.txt"
         self._dem_types = ["dem10b", "dem5a", "dem5b"]
         self._img_types = ["standard", "photo", "slope"]
-        self._chiriin_source = "出典：国土地理院 地理院タイル"
-        self._rinya_miyagi_source = "宮城県・微地形表現図マップタイル（林野庁加工）"
+        self._chiriin_source = {
+            "source": "出典：国土地理院 地理院タイル",
+            "store": "https://maps.gsi.go.jp/development/ichiran.html",
+        }
+        self._rinya_miyagi_source = {
+            "source": "出典：宮城県・微地形表現図マップタイル（林野庁加工）",
+            "store": "https://www.geospatial.jp/ckan/dataset/rinya-miyagi-maptiles",
+        }
+        self._world_imagery_source = {
+            "source": "出典：Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+            "store": "https://ej.maps.arcgis.com/home/item.html?id=232727dda91d4978a3b1005bc45f8634",
+        }
 
     @property
     def dem_10b(self) -> str:
@@ -403,6 +413,21 @@ class TileUrls(object):
             出典：宮城県・微地形表現図マップタイル（林野庁加工）
         """
         return "https://forestgeo.info/opendata/4_miyagi/topography_2023/{z}/{x}/{y}.webp"
+
+    @property
+    def world_imagery(self) -> str:
+        """
+        ## Summary:
+            ESRIが提供するWorld ImageryタイルのURLを生成する。
+            ZoomLevelは0~23の範囲で指定する必要がある。
+            出典：Esri, Maxar, Earthstar Geographics, and the GIS User Community
+
+        """
+        return (
+            "https://services.arcgisonline.com/arcgis/rest/services/"
+            "World_Imagery/MapServer/WMTS/tile/1.0.0/World_Imagery/World_Imagery/"
+            "default028mm/{z}/{y}/{x}.jpg"
+        )
 
 
 class FigureSize(NamedTuple):
