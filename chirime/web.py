@@ -3,7 +3,7 @@ import datetime
 import time
 from io import BytesIO
 from pprint import pprint
-from typing import Union
+from typing import Optional, Union
 
 import aiohttp
 import numpy as np
@@ -606,7 +606,7 @@ async def fetch_geoid_height(
     year: int = 2011,
     max_retry: int = 5,
     time_out: int = 10,
-) -> dict[int, float]:
+) -> dict[int, Optional[float]]:
     """
     ## Summary:
         地理院APIで2011年の日本測地系におけるジオイド高を取得する
@@ -628,7 +628,8 @@ async def fetch_geoid_height(
     else:
         url = chiriin_web_api.geoid_height_2024_url().format(lon=lon, lat=lat)
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
+        "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0)"
+        " Gecko/20100101 Firefox/47.0"
     }
     for _ in range(max_retry):
         try:
@@ -735,9 +736,12 @@ async def fetch_geocentric_orthogonal_coordinates(
     Args:
         session(aiohttp.client.ClientSession): セッション
         index(int): インデックス
-        kwargs: 以下のいずれかの組み合わせで指定する
-            - lon(float), lat(float), alt(float), geoid_height(float): 経緯度と標高とジオイド高
-            - x(float), y(float), z(float): 地心直交座標系の座標
+        kwargs:
+            以下のいずれかの組み合わせで指定する
+            - lon(float), lat(float), alt(float), geoid_height(float):
+                経緯度と標高とジオイド高
+            - x(float), y(float), z(float):
+                地心直交座標系の座標
         max_retry(int): リトライ回数
         time_out(int): タイムアウト
     """
@@ -761,10 +765,12 @@ async def fetch_geocentric_orthogonal_coordinates(
         )
     else:
         raise ValueError(
-            "Invalid arguments. Provide either (lon, lat, alt, geoid_height) or (x, y, z)."
+            "Invalid arguments. Provide either (lon, lat, alt, geoid_height)"
+            " or (x, y, z)."
         )
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
+        "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) "
+        "Gecko/20100101 Firefox/47.0"
     }
     for _ in range(max_retry):
         try:
