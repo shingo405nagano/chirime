@@ -128,7 +128,7 @@ class MapEditor(PaperSize):
                 self.out_crs, left_cm=1.5, bottom_cm=1.8, fontsize=7, va="top"
             )
 
-    def make_sheet(self, size: str = "portrait_a4") -> tuple[plt.Figure, plt.Axes]:
+    def make_sheet(self, size: str = "portrait_a4") -> tuple[plt.Figure, plt.Axes]:  # type: ignore
         """
         ## Summary:
             matplotlibのFigureとAxesを作成する。
@@ -309,7 +309,7 @@ class MapEditor(PaperSize):
         elif dim_count == 1:
             # ジオメトリが複数のジオメトリの場合
             geom_list = []
-            for geom in geometry:
+            for geom in geometry:  # type: ignore
                 geom = transform_geometry(
                     geometry=geom,
                     in_crs=in_crs,
@@ -390,7 +390,7 @@ class MapEditor(PaperSize):
             label.set_verticalalignment("bottom")
             label.set_rotation(90)
             label.set_fontsize(5)
-        if (mag == True) and (major_grid == True):
+        if mag and major_grid:
             # 磁北に合わせたグリッドを設定
             self._set_mag_grid(
                 x_min,
@@ -477,7 +477,7 @@ class MapEditor(PaperSize):
                 color=color,
                 linestyle=line_style,
                 linewidth=line_width,
-                zorder=0,
+                zorder=3,
             )
             # Y軸の目盛り線を描画
             plt.plot(
@@ -486,7 +486,7 @@ class MapEditor(PaperSize):
                 color=color,
                 linestyle=line_style,
                 linewidth=line_width,
-                zorder=0,
+                zorder=3,
             )
 
     def _set_mag_minor_grid(
@@ -526,8 +526,10 @@ class MapEditor(PaperSize):
         ## Summary:
             真北に合わせて地図のグリッドを設定する。
         Args:
-            major_grid (bool): Trueの場合、主要なグリッド線を表示する（デフォルトはTrue）。
-            minor_grid (bool): Trueの場合、補助的なグリッド線を表示する（デフォルトはTrue）。
+            major_grid (bool):
+                Trueの場合、主要なグリッド線を表示する（デフォルトはTrue）。
+            minor_grid (bool):
+                Trueの場合、補助的なグリッド線を表示する（デフォルトはTrue）。
         Returns:
             None
         """
@@ -541,12 +543,12 @@ class MapEditor(PaperSize):
         # Gridの設定
         if major_grid:
             self.ax.grid(
-                which="major", color="#949495", linestyle="-", linewidth=0.35, zorder=0
+                which="major", color="#949495", linestyle="-", linewidth=0.35, zorder=3
             )
         if minor_grid:
             self.ax.minorticks_on()
             self.ax.grid(
-                which="minor", color="#dcdddd", linestyle="--", linewidth=0.1, zorder=0
+                which="minor", color="#dcdddd", linestyle="--", linewidth=0.1, zorder=3
             )
 
     def remove_axis_grid(self) -> None:
@@ -688,38 +690,40 @@ class MapEditor(PaperSize):
                 - 'pale': 淡色地図（ZL = 5 ~ 18）
                 - 'photo': 航空写真（ZL = 2 ~ 18)
                 - 'slope': 傾斜図（ZL = 3 ~ 15）
+                - 'micro_topo_miyagi': 宮城県微地形図（ZL = 15）
             zl (int):
                 ズームレベル。デフォルトは15。
         Returns:
             None
         """
         # 地図の種類に応じたタイル取得関数とソースURLを設定
-        source = TileUrls()._chiriin_source
+        tile_urls = TileUrls()
         data = {
             "standard": {
                 "func": chiriin_drawer.fetch_img_tile_geometry_with_standard_map,
-                "source": source,
+                "source": tile_urls._chiriin_source,
             },
             "pale": {
                 "func": chiriin_drawer.fetch_img_tile_geometry_with_pale_map,
-                "source": source,
+                "source": tile_urls._chiriin_source,
             },
             "photo": {
                 "func": chiriin_drawer.fetch_img_tile_geometry_with_photo_map,
-                "source": source,
+                "source": tile_urls._chiriin_source,
             },
             "slope": {
                 "func": chiriin_drawer.fetch_img_tile_geometry_with_slope_map,
-                "source": source,
+                "source": tile_urls._chiriin_source,
             },
             "micro_topo_miyagi": {
                 "func": chiriin_drawer.fetch_img_tile_geometry_with_miyagi_micro_topo,
-                "source": source,
+                "source": tile_urls._rinya_miyagi_source,
             },
         }.get(map_name.lower(), None)
         if data is None:
             raise ValueError(
-                f"Invalid map name: {map_name}. Choose from 'standard', 'photo', 'slope'."
+                f"Invalid map name: {map_name}. Choose from 'standard', 'photo',"
+                " 'slope', 'micro_topo_miyagi'."
             )
         # タイルの取得範囲を計算
         metre_bbox = shapely.box(*(x_min, y_min, x_max, y_max))
@@ -742,6 +746,7 @@ class MapEditor(PaperSize):
                         trg_scope.y_min,
                         trg_scope.y_max,
                     ),
+                    zorder=1,
                 )
             except Exception as e:
                 print(
@@ -789,7 +794,7 @@ class MapEditor(PaperSize):
         ax_width = icon_size / fig_width
         ax_height = icon_size / fig_height
         ax_img = self.fig.add_axes([left, bottom, ax_width, ax_height])
-        ax_img.imshow(icon)
+        ax_img.imshow(icon, zorder=2)
         ax_img.axis("off")
 
     def add_icon_of_true_north(self, img_size: float = 1.5) -> None:
