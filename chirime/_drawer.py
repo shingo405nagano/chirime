@@ -775,6 +775,7 @@ class _ChiriinDrawer(object):
             "google_satellite": tile_urls.google_satellite,
             "micro_topo_miyagi": tile_urls.micro_topo_miyagi,
             "world_imagery": tile_urls.world_imagery,
+            "open_street_map": tile_urls.osm_basic,
         }.get(image_type, tile_urls.standard_map)
         self._check_img_zl(image_type, zoom_level)
         # geometryをカバーするタイル情報を取得
@@ -1067,6 +1068,21 @@ class _ChiriinDrawer(object):
             **kwargs,
         )  # type: ignore
 
+    def fetch_img_tile_geometry_with_osm(
+        self,
+        geometry: shapely.geometry.base.BaseGeometry,
+        zoom_level: int,
+        in_crs: str | int | pyproj.CRS,
+        **kwargs,
+    ) -> list[TileData]:
+        return self.fetch_img_tile_geometry(
+            geometry=geometry,
+            zoom_level=zoom_level,
+            in_crs=in_crs,
+            image_type="open_street_map",
+            **kwargs,
+        )  # type: ignore
+
     def _check_img_zl(self, img_type: str, zoom_level: int) -> bool:
         """
         ## Summary:
@@ -1115,6 +1131,13 @@ class _ChiriinDrawer(object):
             else:
                 raise ValueError(
                     "World imagery map tiles are only available for zoom levels 0 to 23."
+                )
+        elif img_type in "open_street_map":
+            if 0 <= zoom_level <= 17:
+                return True
+            else:
+                raise ValueError(
+                    "Open street map tiles are only available for zoom levels 0 to 19."
                 )
         else:
             raise ValueError(
@@ -1243,7 +1266,7 @@ def calculate_mean_slope_in_polygon(
         float:
             平均傾斜（度単位）
     """
-    resps = chiriin_drawer.fetch_elevation_tile_mesh_with_dem10b(poly, 14, in_crs)
+    resps = chirime.fetch_elevation_tile_mesh_with_dem10b(poly, 14, in_crs)
     means = []
     for tile_data in resps:
         x_range = np.arange(

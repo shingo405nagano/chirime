@@ -730,6 +730,11 @@ class MapEditor(PaperSize):
                 "source": tile_urls._world_imagery_source.get("source"),
                 "store": tile_urls._world_imagery_source.get("store"),
             },
+            "open_street_map": {
+                "func": chiriin_drawer.fetch_img_tile_geometry_with_osm,
+                "source": tile_urls._osm_source.get("source"),
+                "store": tile_urls._osm_source.get("store"),
+            },
         }.get(map_name.lower(), None)
         if data is None:
             raise ValueError(

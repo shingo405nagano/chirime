@@ -312,6 +312,14 @@ class TileUrls(object):
             "source": "出典：Esri, Maxar, Earthstar Geographics, and the GIS User Community",
             "store": "https://ej.maps.arcgis.com/home/item.html?id=232727dda91d4978a3b1005bc45f8634",
         }
+        self._osm_source = {
+            "source": (
+                "出典：Base map and data from OpenStreetMap and OpenStreetMap"
+                " Foundation (CC-BY-SA). © https://www.openstreetmap.org"
+                " and contributors."
+            ),
+            "store": "https://www.openstreetmap.org/copyright/ja",
+        }
 
     @property
     def dem_10b(self) -> str:
@@ -428,6 +436,18 @@ class TileUrls(object):
             "World_Imagery/MapServer/WMTS/tile/1.0.0/World_Imagery/World_Imagery/"
             "default028mm/{z}/{y}/{x}.jpg"
         )
+
+    @property
+    def osm_basic(self) -> str:
+        """
+        ## Summary:
+            OpenStreetMapの標準地図タイルのURLを生成する。
+            ZoomLevelは0~19の範囲で指定する必要がある。
+        Returns:
+            str: OpenStreetMapの標準地図タイルのURL。ズームレベル、X座標、Y座標は後から指定する
+            必要がある。
+        """
+        return "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 
 
 class FigureSize(NamedTuple):

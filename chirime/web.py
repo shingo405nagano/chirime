@@ -472,8 +472,12 @@ async def fetch_tiles_from_web_async(
     Returns:
         list[str]: タイルのデータリスト。取得できなかった場合は`None`が入る。
     """
+    headers = {
+        "User-Agent": "chirime-app/1.0 (contact: snagano@center-green.or.jp)",
+        "Accept": "image/png",
+    }
     results = []
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(headers=headers) as session:
         for i in range(0, len(url_list), 10):
             batch = url_list[i : i + 10]
             tasks = [session.get(url, timeout=10) for url in batch]
